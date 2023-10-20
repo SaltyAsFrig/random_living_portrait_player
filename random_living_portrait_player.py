@@ -35,7 +35,8 @@ repeatcount = 1 #how many times to repeat a video before next random selection
 slength = '1920' #the screen's normally horizontal resolution
 swidth = '1080' #the screen's normally vertical resolution
 tgrDelay = 5 #seconds to wait before playing the video after motion trigger
-reTgrDelay = 30 #seconds to wait after playing before re-enabling trigger
+reTgrDelay = 20 #seconds to wait after playing before re-enabling trigger
+nextVideoDelay = 10 #seconds to wait before switching videos
 
 cwd = os.getcwd()
 tgr = 0 
@@ -52,10 +53,13 @@ try:
     VIDEO_PATH = Path(videFilesList[random.randrange(0, len(videFilesList))])
     print("Selected video: " + str(VIDEO_PATH))
     
-    #set up omxplayer, load first video and pause
+    #set up omxplayer; load first video and pause; take a sccreenshot of the current video
+    #and set the wallpaper to the screenshot
     player = OMXPlayer(VIDEO_PATH,  args=['--no-osd', '--loop', '--win', '0 0 {0} {1}'.format(slength, swidth)])
     sleep(1)
     player.pause()
+    os.system("raspi2png --display 0 --pngname screen.png") 
+    os.system("DISPLAY=:0 pcmanfm --set-wallpaper={0}/screen.png".format(cwd))
 
     #set up motionsensor
     pir = MotionSensor(4, queue_len=10, sample_rate=10, threshold=.75)
@@ -69,8 +73,7 @@ try:
             print("Triggered! [count = {}]".format(tgr))
             
             #take a sccreenshot of the current video and set the wallpaper to the screenshot
-            os.system("raspi2png --display 0 --pngname screen.png") 
-            os.system("DISPLAY=:0 pcmanfm --set-wallpaper={0}/screen.png".format(cwd))
+
 
             #Countdown the tgrDelay time
             for countdown in range(tgrDelay, 0, -1):
@@ -81,18 +84,26 @@ try:
             print("\nPlaying!")
             player.play()
             sleep(player.duration())
+            player.pause()
 
-            #check if we need to pick a new video
+            #check if we need to pick a new video, update wallpaper
             if (tgr % repeatcount) == 0:
+                for countdown in range(nextVideoDelay, 0, -1):
+                    print("Waiting",str(countdown - 1),"seconds before switching videos.   ", end = '\r')
+                    sleep(1)
                 VIDEO_PATH = Path(videFilesList[random.randrange(0, len(videFilesList))])
-                print("Next video: " + str(VIDEO_PATH))
+                print("\nNext video: " + str(VIDEO_PATH))
                 player.load(str(VIDEO_PATH), pause=True)
+                os.system("raspi2png --display 0 --pngname screen.png") 
+                os.system("DISPLAY=:0 pcmanfm --set-wallpaper={0}/screen.png".format(cwd))
+            else:
+                print("Repeat video {0} more times.".format(repeatcount - (tgr % repeatcount)))
 
             #wait fo the specified time before allowing a re-trigger
             for countdown in range(reTgrDelay, 0, -1):
                 print("Waiting",str(countdown - 1),"seconds to rearm trigger.   ", end = '\r')
                 sleep(1)
-            print("\nReady to trigger")
+            print("\nReady!")
         else:
             pass
         player.set_position(0.0)
