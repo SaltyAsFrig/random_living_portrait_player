@@ -1,11 +1,13 @@
 """
 Loads a folder of videos and randomly plays them when triggered by a PIR sensor (or other trigger).
 Put this script in the same folder as the videos and launch. By default it will use *.mp4 as the filter.
-You can  set a repeatcount if you want to play the same video specific number of times before the next
-random selection. While switching video the desktop will be visible for a few seconds as omxplayer loads
-again. To mask this ive implemented taking a screenshot of the currently paused starting frame and setting
-it as the wallpaper as the video plays. For this you **will also need to install** raspi2png to create the PNG
-file.
+You can set the repeatcount if you want to play the same video specific number of times before the next
+random selection. While switching videos the desktop will be visible for a few seconds as omxplayer loads
+again. To mask that it takes a screenshot of the currently paused starting frame and sets it as the
+wallpaper. For this you **will also need to install** raspi2png to create the PNG file. There are also
+configurable delays (in seconds) for how long to wait between a motion trigger event and playing the
+video, and for how long to wait before enabling the trigger again after a video finishes. Use these to
+enhance the startle factor by making it less predictable to passers by.
 
 This version was developed on a Pi4 using the 2021-05-07-raspios-buster-armhf release. You need to use a Buster
 release that still has omxplayer in it as newer Raspbian releases don't work with it. This should still work on
@@ -28,12 +30,15 @@ from omxplayer.player import OMXPlayer
 from pathlib import Path
 from time import sleep
 
-
+#PARAMETERS TO SET
 repeatcount = 1 #how many times to repeat a video before next random selection
-slength = '1920' 
-swidth = '1080'
-tgr = 0
+slength = '1920' #the screen's normally horizontal resolution
+swidth = '1080' #the screen's normally vertical resolution
+tgrDelay = 5 #seconds to wait before playing the video after motion trigger
+reTgrDelay = 30 #seconds to wait after playing before re-enabling trigger
+
 cwd = os.getcwd()
+tgr = 0 
 
 print("Starting up....")
 videFilesList = sorted(glob.glob('*.mp4')) #get list of files to play
@@ -46,23 +51,48 @@ for i in range(0, len(videFilesList)):
 try:
     VIDEO_PATH = Path(videFilesList[random.randrange(0, len(videFilesList))])
     print("Selected video: " + str(VIDEO_PATH))
+    
+    #set up omxplayer, load first video and pause
     player = OMXPlayer(VIDEO_PATH,  args=['--no-osd', '--loop', '--win', '0 0 {0} {1}'.format(slength, swidth)])
-    pir = MotionSensor(4)
     sleep(1)
-    print("Ready to trigger")
-    while True:
-        player.pause()
+    player.pause()
+
+    #set up motionsensor
+    pir = MotionSensor(4, queue_len=10, sample_rate=10, threshold=.75)
+
+    print("Ready!")
+    
+    #Loop until keyboard interrupt [CTRL+C]
+    while True:      
         if pir.motion_detected:
-            print("trigger count {}".format(tgr))            
-            os.system("raspi2png --display 0 --pngname screen.png") #take a sccreenshot of the current video 
-            os.system("DISPLAY=:0 pcmanfm --set-wallpaper={0}/screen.png".format(cwd)) #set wallpaper to the screenshot
+            tgr = tgr + 1
+            print("Triggered! [count = {}]".format(tgr))
+            
+            #take a sccreenshot of the current video and set the wallpaper to the screenshot
+            os.system("raspi2png --display 0 --pngname screen.png") 
+            os.system("DISPLAY=:0 pcmanfm --set-wallpaper={0}/screen.png".format(cwd))
+
+            #Countdown the tgrDelay time
+            for countdown in range(tgrDelay, 0, -1):
+                print("Delay for",str(countdown - 1),"more seconds.   ", end = '\r')
+                sleep(1)
+            
+            #Play the video
+            print("\nPlaying!")
             player.play()
             sleep(player.duration())
-            tgr = tgr + 1
+
+            #check if we need to pick a new video
             if (tgr % repeatcount) == 0:
                 VIDEO_PATH = Path(videFilesList[random.randrange(0, len(videFilesList))])
                 print("Next video: " + str(VIDEO_PATH))
                 player.load(str(VIDEO_PATH), pause=True)
+
+            #wait fo the specified time before allowing a re-trigger
+            for countdown in range(reTgrDelay, 0, -1):
+                print("Waiting",str(countdown - 1),"seconds to rearm trigger.   ", end = '\r')
+                sleep(1)
+            print("\nReady to trigger")
         else:
             pass
         player.set_position(0.0)
