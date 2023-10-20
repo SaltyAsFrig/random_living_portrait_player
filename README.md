@@ -2,11 +2,13 @@
 
 Loads a folder of videos and randomly plays them when triggered by a PIR sensor (or other trigger).
 Put this script in the same folder as the videos and launch. By default it will use *.mp4 as the filter.
-You can  set a repeatcount if you want to play the same video specific number of times before the next
-random selection. While switching video the desktop will be visible for a few seconds as omxplayer loads
-again. To mask this ive implemented taking a screenshot of the currently paused starting frame and setting
-it as the wallpaper as the video plays. For this you **will also need to install** raspi2png to create the PNG
-file.
+You can set the repeatcount if you want to play the same video specific number of times before the next
+random selection. While switching videos the desktop will be visible for a few seconds as omxplayer loads
+again. To mask that it takes a screenshot of the currently paused starting frame and sets it as the
+wallpaper. For this you **will also need to install** raspi2png to create the PNG file. There are also
+configurable delays (in seconds) for how long to wait between a motion trigger event and playing the
+video, and for how long to wait before enabling the trigger again after a video finishes. Use these to
+enhance the startle factor by making it less predictable to passers by.
 
 This version was developed on a Pi4 using the 2021-05-07-raspios-buster-armhf release. You need to use a Buster
 release that still has omxplayer in it as newer Raspbian releases don't work with it. This should still work on
