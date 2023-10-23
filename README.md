@@ -18,3 +18,6 @@ a Pi3B+ too, but I don't have one to test with.
 For best results clear the desktop of all icons, empty the toolbar and set it to 0% opacity so it's invisible.
 That way between loading videos the screenshot wallpaper masks the fact that omxplayer is closing and re-opening
 to load next file. I also use unclutter in my startup to hide the mouse cursor.
+
+ARGON ONE Users Note: The Argon One case uses GPIO 4 for it's internal power button, so you'll need to edit the
+motion sensor to use another GPIO pin. https://forums.raspberrypi.com/viewtopic.php?t=285383
