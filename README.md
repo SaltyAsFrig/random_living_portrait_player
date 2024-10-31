@@ -1,5 +1,8 @@
 # random_living_portrait_player
 
+Based on this [Instructables article](https://www.instructables.com/Raspberry-Pi-Based-Living-Portrait-Player-Intro/)
+
+It has been enhanced to select random animations to play rather than just looping one.
 Loads a folder of videos and randomly plays them when triggered by a PIR sensor (or other trigger).
 Put this script in the same folder as the videos and launch. By default it will use *.mp4 as the filter.
 You can set the repeatcount if you want to play the same video specific number of times before the next
@@ -19,5 +22,10 @@ For best results clear the desktop of all icons, empty the toolbar and set it to
 That way between loading videos the screenshot wallpaper masks the fact that omxplayer is closing and re-opening
 to load next file. I also use unclutter in my startup to hide the mouse cursor.
 
-ARGON ONE Users Note: The Argon One case uses GPIO 4 for it's internal power button, so you'll need to edit the
+Default PIR connections:
+PIR VCC - pin 2 (5v)
+PIR GND - pin 6 (GND)
+PIR Out - pin 7 (GPIO 4)*
+
+*ARGON ONE Users Note: The Argon One case uses GPIO 4 for it's internal power button, so you'll need to edit the
 motion sensor to use another GPIO pin. https://forums.raspberrypi.com/viewtopic.php?t=285383
