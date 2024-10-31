@@ -23,9 +23,9 @@ That way between loading videos the screenshot wallpaper masks the fact that omx
 to load next file. I also use unclutter in my startup to hide the mouse cursor.
 
 Default PIR connections:
-PIR VCC - pin 2 (5v)
-PIR GND - pin 6 (GND)
-PIR Out - pin 7 (GPIO 4)*
+<BR>PIR VCC - pin 2 (5v)
+<BR>PIR GND - pin 6 (GND)
+<BR>PIR Out - pin 7 (GPIO 4)*
 
 *ARGON ONE Users Note: The Argon One case uses GPIO 4 for it's internal power button, so you'll need to edit the
 motion sensor to use another GPIO pin. https://forums.raspberrypi.com/viewtopic.php?t=285383
